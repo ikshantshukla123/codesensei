@@ -3,10 +3,21 @@ import { Brain, Terminal } from 'lucide-react'
 import ThemeToggle from './ThemeToggle'
 import MobileMenu from './MobileMenu'
 import ActiveNavLink from './ActiveNavLink'
+import { auth } from '@clerk/nextjs/server'
+import { UserButton } from '@clerk/nextjs'
+import SignInButton from './SignInButton'
 
 // Server Component - Static navigation structure
-export default function Navbar() {
-  const navItems = [
+export default async function Navbar() {
+  const { userId } = await auth()
+  
+  // Different nav items based on authentication status
+  const navItems = userId ? [
+    { name: 'Dashboard', href: '/dashboard' },
+    { name: 'My Wallet', href: '/wallet' },
+    { name: 'My Learning', href: '/learning' },
+    { name: 'Analytics', href: '/analytics' },
+  ] : [
     { name: 'Home', href: '/' },
     { name: 'About', href: '/about' },
     { name: 'Features', href: '/features' },
@@ -48,13 +59,24 @@ export default function Navbar() {
             {/* Theme Toggle - Client Component */}
             <ThemeToggle />
 
-            {/* CTA Button - Desktop */}
-            <button className="hidden md:flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-300 glow-green">
-              Connect GitHub
-            </button>
+            {/* Authentication - Show different buttons based on auth state */}
+            {userId ? (
+              <div className="hidden md:flex items-center space-x-4">
+                <UserButton
+                  afterSignOutUrl="/"
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-10 h-10"
+                    }
+                  }}
+                />
+              </div>
+            ) : (
+              <SignInButton />
+            )}
 
             {/* Mobile Menu - Client Component */}
-            <MobileMenu navItems={navItems} />
+            <MobileMenu navItems={navItems} isAuthenticated={!!userId} />
           </div>
         </div>
       </div>

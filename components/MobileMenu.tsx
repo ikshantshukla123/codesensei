@@ -4,12 +4,15 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
+import { UserButton } from '@clerk/nextjs'
+import MobileSignInButton from './MobileSignInButton'
 
 interface MobileMenuProps {
   navItems: Array<{ name: string; href: string }>
+  isAuthenticated: boolean
 }
 
-export default function MobileMenu({ navItems }: MobileMenuProps) {
+export default function MobileMenu({ navItems, isAuthenticated }: MobileMenuProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const pathname = usePathname()
 
@@ -48,10 +51,25 @@ export default function MobileMenu({ navItems }: MobileMenuProps) {
                 </Link>
               )
             })}
-            <div className="px-3 py-2">
-              <button className="w-full flex justify-center items-center px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-300">
-                Connect GitHub
-              </button>
+            
+            {/* Authentication section */}
+            <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-700 mt-2 pt-4">
+              {isAuthenticated ? (
+                <div className="flex flex-col space-y-3">
+                  <div className="flex justify-center">
+                    <UserButton
+                      afterSignOutUrl="/"
+                      appearance={{
+                        elements: {
+                          avatarBox: "w-10 h-10"
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <MobileSignInButton onClick={() => setIsMobileMenuOpen(false)} />
+              )}
             </div>
           </div>
         </div>

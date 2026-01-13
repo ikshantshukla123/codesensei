@@ -9,7 +9,13 @@ const { Clock, TrendingUp } = SmallIconsBundle
 const AlertTriangleIcon = SmallIconsBundle.Clock // Reuse Clock icon as placeholder
 
 export default function LiabilityReceipt() {
-  const currentDate = useMemo(() => new Date().toLocaleDateString(), [])
+  const currentDate = useMemo(() => {
+    const now = new Date()
+    const day = String(now.getDate()).padStart(2, '0')
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const year = now.getFullYear()
+    return `${day}/${month}/${year}`
+  }, [])
 
   const vulnerabilities = useMemo(() => [
     { name: 'SQL Injection (CRITICAL)', amount: '$65,000.00' },

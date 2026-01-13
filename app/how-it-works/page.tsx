@@ -7,7 +7,7 @@ export const revalidate = false
 // SEO Metadata
 export const metadata: Metadata = {
   title: 'How It Works - CodeSensei | Transform Your Coding Workflow',
-  description: 'Discover how CodeSensei transforms your development workflow into continuous learning. Connect GitHub, push code, learn from AI-powered debt analysis, and build career equity.',
+  description: 'Discover how CodeSensei transforms your development workflow into continuous learning. Get started with our platform, push code, learn from AI-powered debt analysis, and build career equity.',
   keywords: ['how it works', 'github integration', 'technical debt analysis', 'code learning', 'security training', 'career development', 'workflow automation'],
   openGraph: {
     title: 'How CodeSensei Works - Security Learning Made Simple',

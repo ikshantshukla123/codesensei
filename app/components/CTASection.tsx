@@ -3,6 +3,8 @@
 import React, { useMemo } from 'react'
 import { motion, Variants } from 'framer-motion'
 import { GithubIcon, ArrowRightIcon, SmallIconsBundle } from './HomeIcons'
+import Link from 'next/link'
+import HeroSignInButton from '@/components/HeroSignInButton'
 
 const { CheckCircle } = SmallIconsBundle
 
@@ -85,15 +87,7 @@ export default function CTASection() {
             variants={fadeInUp}
             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="group flex items-center px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-300 glow-green text-lg"
-            >
-              <GithubIcon className="mr-3 h-6 w-6" />
-              Connect GitHub - It's Free
-              <ArrowRightIcon className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-            </motion.button>
+            <HeroSignInButton />
           </motion.div>
 
           <motion.p
