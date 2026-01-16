@@ -1,5 +1,7 @@
 import { Metadata } from 'next'
 import dynamic from 'next/dynamic'
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
 // Force static generation for optimal performance
 export const revalidate = false
@@ -103,6 +105,13 @@ function HomeSkeleton() {
   )
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+
+   const { userId } = await auth();
+
+  // ✅ If user logged in, block landing page
+  if (userId) {
+    redirect("/dashboard");
+  }
   return <ClientHome />
 }
