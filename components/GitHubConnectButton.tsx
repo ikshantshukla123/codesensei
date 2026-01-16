@@ -9,12 +9,11 @@ export default function GitHubConnectButton() {
   const handleGitHubConnect = () => {
     openSignIn({
       appearance: {
-        baseTheme: 'light',
         elements: {
           card: 'bg-white border border-gray-300 shadow-2xl rounded-lg',
           headerTitle: 'text-gray-900 text-xl font-bold',
           headerSubtitle: 'text-gray-600',
-          socialButtonsBlockButton: 
+          socialButtonsBlockButton:
             'bg-gray-900 border-gray-900 hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-md transition-colors',
           socialButtonsBlockButtonText: 'font-semibold text-white',
           socialButtonsIconBox: 'text-white',

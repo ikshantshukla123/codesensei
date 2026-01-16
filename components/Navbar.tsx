@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Brain, Terminal } from 'lucide-react'
+import { Brain, Terminal, Github } from 'lucide-react'
 import ThemeToggle from './ThemeToggle'
 import MobileMenu from './MobileMenu'
 import ActiveNavLink from './ActiveNavLink'
@@ -10,7 +10,7 @@ import SignInButton from './SignInButton'
 // Server Component - Static navigation structure
 export default async function Navbar() {
   const { userId } = await auth()
-  
+
   // Different nav items based on authentication status
   const navItems = userId ? [
     { name: 'Dashboard', href: '/dashboard' },
@@ -45,7 +45,7 @@ export default async function Navbar() {
             ))}
           </div>
 
-          {/* Right side - Brain icon, Theme toggle and CTA */}
+          {/* Right side - Brain icon, GitHub icon, Theme toggle and CTA */}
           <div className="flex items-center space-x-4">
             {/* How It Works Brain Icon */}
             <Link
@@ -55,6 +55,17 @@ export default async function Navbar() {
             >
               <Brain className="h-5 w-5 text-purple-400 group-hover:text-purple-300" />
             </Link>
+
+            {/* GitHub Learning Icon - Only show for authenticated users */}
+            {userId && (
+              <Link
+                href="/learn/github"
+                className="p-2 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 transition-colors duration-300 border border-blue-500/20 group"
+                aria-label="Learn GitHub"
+              >
+                <Github className="h-5 w-5 text-blue-400 group-hover:text-blue-300" />
+              </Link>
+            )}
 
             {/* Theme Toggle - Client Component */}
             <ThemeToggle />

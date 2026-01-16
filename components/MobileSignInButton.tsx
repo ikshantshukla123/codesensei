@@ -12,7 +12,7 @@ export default function MobileSignInButton({ onClick }: MobileSignInButtonProps)
   const handleSignIn = () => {
     openSignIn({
       appearance: {
-        baseTheme: 'light',
+   
         elements: {
           card: 'bg-white border border-gray-300 shadow-2xl rounded-lg',
           headerTitle: 'text-gray-900 text-xl font-bold',
