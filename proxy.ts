@@ -1,26 +1,33 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
 
-const isProtectedRoute = createRouteMatcher([
-  '/dashboard(.*)', 
-  '/profile(.*)', 
-  '/wallet(.*)', 
-  '/learning(.*)', 
-  '/analytics(.*)'
+// Define public routes that don't require authentication
+const isPublicRoute = createRouteMatcher([
+  '/',
+  '/about',
+  '/features',
+  '/how-it-works',
+  '/pricing',
+  '/sign-in(.*)',
+  '/api/webhooks(.*)', // GitHub webhooks should be public
+  '/api/inngest(.*)',  // Inngest endpoints should be public
 ])
-const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)'])
 
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth()
+  const isPublic = isPublicRoute(req)
 
-  // If user is signed in and trying to access sign-in page, redirect to dashboard
-  if (userId && (req.nextUrl.pathname.startsWith('/sign-in') || req.nextUrl.pathname.startsWith('/sign-up'))) {
-    return Response.redirect(new URL('/dashboard', req.url))
+  // If user is logged in and tries to access home page, redirect to dashboard
+  if (userId && req.nextUrl.pathname === '/') {
+    return NextResponse.redirect(new URL('/dashboard', req.url))
   }
 
-  // If user is not signed in and trying to access protected route, redirect to sign-in
-  if (!userId && isProtectedRoute(req)) {
-    return Response.redirect(new URL('/sign-in', req.url))
+  // Protect all routes that aren't public
+  if (!isPublic && !userId) {
+    return NextResponse.redirect(new URL('/sign-in', req.url))
   }
+
+  return NextResponse.next()
 })
 
 export const config = {

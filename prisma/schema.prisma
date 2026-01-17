@@ -12,13 +12,114 @@ datasource db {
 }
 
 model User {
-  id             String   @id // Clerk user ID
-  email          String   @unique
+  id             String       @id // Clerk user ID
+  email          String       @unique
   name           String?
   avatar         String?
   githubUsername String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  githubId       Int? // GitHub user ID for installation matching
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  repositories   Repository[]
+  submissions    Submission[]
+  wallet         Wallet?
 
   @@map("users")
+}
+
+model Repository {
+  id             String     @id @default(uuid())
+  githubRepoId   Int
+  name           String
+  installationId Int
+  userId         String
+  createdAt      DateTime   @default(now())
+  analyses       Analysis[]
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([githubRepoId, userId])
+  @@index([userId])
+  @@map("repositories")
+}
+
+model Analysis {
+  id           String     @id @default(cuid())
+  prNumber     Int
+  riskScore    Int
+  bugs         Json
+  createdAt    DateTime   @default(now())
+  issuesFound  Int        @default(0)
+  repositoryId String
+  status       String     @default("PENDING")
+  attackProof  Json?
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@index([repositoryId])
+  @@index([createdAt])
+  @@index([riskScore])
+  @@map("analyses")
+}
+
+model WebhookLog {
+  id          String    @id @default(cuid())
+  deliveryId  String    @unique
+  event       String
+  processed   Boolean   @default(false)
+  processedAt DateTime?
+  error       String?
+  createdAt   DateTime  @default(now())
+  meta        Json? // Store minimal metadata only, not full payload
+
+  @@index([deliveryId])
+  @@index([createdAt])
+  @@map("webhook_logs")
+}
+
+model Submission {
+  id         String   @id @default(cuid())
+  userId     String
+  sourceCode String   @db.Text
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  issues     Issue[]
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("submissions")
+}
+
+model Issue {
+  id                 String     @id @default(cuid())
+  submissionId       String
+  type               String
+  severity           String
+  description        String     @db.Text
+  file               String?
+  line               Int?
+  exposureAmount     Float      @default(0) // Financial impact in dollars
+  definition         String     @db.Text
+  compliance         String     @db.Text
+  impact             String     @db.Text
+  recommendedFixCode String?    @db.Text
+  fixed              Boolean    @default(false)
+  fixedAt            DateTime?
+  createdAt          DateTime   @default(now())
+  submission         Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@index([submissionId])
+  @@index([fixed])
+  @@map("issues")
+}
+
+model Wallet {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  totalDebtPaid Float    @default(0)
+  xp            Int      @default(0)
+  badges        Json     @default("[]")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("wallets")
 }
