@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Wallet, Award, Shield, Zap, TrendingUp, Lock, Star, Sparkles, Target, ArrowRight } from 'lucide-react'
+import { Button } from "@/components/ui/Button"
 
 interface Badge {
   id: string
@@ -11,15 +13,100 @@ interface Badge {
   earnedAt: string
 }
 
-interface Wallet {
+interface WalletAttributes {
   totalDebtPaid: number
   xp: number
   badges: Badge[]
 }
 
+// ----------------------------------------------------------------------
+// Reusable UI Components
+// ----------------------------------------------------------------------
+
+function PremiumCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`bg-[#111111] border border-[#262626] rounded-xl p-6 hover:border-[#404040] transition-all duration-300 ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  subValue,
+  icon: Icon,
+  accentColor = "text-emerald-500",
+  className = ""
+}: {
+  label: string,
+  value: string,
+  subValue?: string,
+  icon: any,
+  accentColor?: string,
+  className?: string
+}) {
+  return (
+    <PremiumCard className={`relative overflow-hidden group ${className}`}>
+      <div className={`absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity ${accentColor}`}>
+        <Icon className="w-24 h-24" />
+      </div>
+      <div className="relative z-10">
+        <div className="flex items-center gap-3 mb-2 text-[#737373]">
+          <div className={`p-2 rounded-lg bg-[#1a1a1a] ${accentColor}`}>
+            <Icon className="w-5 h-5" />
+          </div>
+          <span className="text-sm font-medium uppercase tracking-wider">{label}</span>
+        </div>
+        <p className="text-3xl font-bold text-white mt-1">{value}</p>
+        {subValue && <p className="text-xs text-[#525252] font-mono mt-1">{subValue}</p>}
+      </div>
+    </PremiumCard>
+  )
+}
+
+function BadgeCard({ badge }: { badge: Badge }) {
+  return (
+    <div className="group bg-[#111111] border border-[#262626] rounded-xl p-4 flex items-center gap-4 hover:border-yellow-500/50 hover:bg-yellow-500/5 transition-all duration-300">
+      <div className="w-12 h-12 bg-[#1a1a1a] rounded-lg border border-[#262626] flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+        {badge.icon || '🏆'}
+      </div>
+      <div>
+        <h4 className="text-white font-medium text-sm group-hover:text-yellow-500 transition-colors">
+          {badge.name}
+        </h4>
+        <p className="text-[#737373] text-xs mt-0.5 line-clamp-1">
+          {badge.description}
+        </p>
+        <p className="text-[#525252] text-[10px] font-mono mt-1 uppercase">
+          Earned: {new Date(badge.earnedAt).toLocaleDateString()}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// ----------------------------------------------------------------------
+// Loading State
+// ----------------------------------------------------------------------
+function LoadingSkeleton() {
+  return (
+    <div className="min-h-screen bg-[#0a0a0a] pb-20 p-6 flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4 animate-pulse">
+        <div className="w-16 h-16 bg-[#1a1a1a] rounded-full" />
+        <div className="h-4 w-32 bg-[#1a1a1a] rounded" />
+      </div>
+    </div>
+  )
+}
+
+// ----------------------------------------------------------------------
+// Main Component
+// ----------------------------------------------------------------------
+
 export default function CareerWalletClient() {
   const router = useRouter()
-  const [wallet, setWallet] = useState<Wallet | null>(null)
+  const [wallet, setWallet] = useState<WalletAttributes | null>(null)
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
 
@@ -42,46 +129,40 @@ export default function CareerWalletClient() {
     fetchWalletData()
   }, [])
 
-  const getLevel = (xp: number) => {
-    return Math.floor(xp / 100) + 1
-  }
-
-  const getNextLevelXP = (xp: number) => {
-    const currentLevel = getLevel(xp)
-    return currentLevel * 100
-  }
-
-  const getLevelProgress = (xp: number) => {
-    const currentLevelXP = (getLevel(xp) - 1) * 100
-    const nextLevelXP = getNextLevelXP(xp)
-    return ((xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100
-  }
-
+  // Rank Calculation Logic
   const getRank = (xp: number) => {
-    if (xp < 100) return { name: 'Novice Coder', icon: '🌱', color: 'from-gray-400 to-gray-600' }
-    if (xp < 500) return { name: 'Junior Developer', icon: '💻', color: 'from-blue-400 to-blue-600' }
-    if (xp < 1000) return { name: 'Software Engineer', icon: '⚡', color: 'from-purple-400 to-purple-600' }
-    if (xp < 2500) return { name: 'Senior Engineer', icon: '🚀', color: 'from-orange-400 to-orange-600' }
-    return { name: 'Security Expert', icon: '🛡️', color: 'from-yellow-400 to-yellow-600' }
+    if (xp < 100) return { name: 'Novice Coder', icon: '🌱', color: 'text-gray-400' }
+    if (xp < 500) return { name: 'Junior Audit', icon: '💻', color: 'text-blue-400' }
+    if (xp < 1000) return { name: 'Security Engineer', icon: '⚡', color: 'text-purple-400' }
+    if (xp < 2500) return { name: 'Senior Architect', icon: '🚀', color: 'text-orange-400' }
+    return { name: 'Grandmaster', icon: '🛡️', color: 'text-yellow-400' }
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading your wallet...</p>
-        </div>
-      </div>
-    )
+  const getLevel = (xp: number) => Math.floor(xp / 100) + 1
+  const getNextLevelXP = (xp: number) => {
+    const lvl = getLevel(xp);
+    return lvl * 100;
   }
+  const getLevelProgress = (xp: number) => {
+    const prevLvlXp = (getLevel(xp) - 1) * 100;
+    const nextLvlXp = getNextLevelXP(xp);
+    const totalRequired = nextLvlXp - prevLvlXp;
+    const current = xp - prevLvlXp;
+    return (current / totalRequired) * 100;
+  }
+
+  if (loading) return <LoadingSkeleton />
 
   if (!wallet) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Wallet not found</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">Please sync your account first.</p>
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6 text-center text-white">
+        <div>
+          <Lock className="w-16 h-16 mx-auto text-[#262626] mb-4" />
+          <h1 className="text-xl font-bold">Wallet Not Found</h1>
+          <p className="text-[#737373] mt-2">Initialize your account on the dashboard first.</p>
+          <Button className="mt-6 bg-white text-black hover:bg-gray-200" onClick={() => router.push('/dashboard')}>
+            Go to Dashboard
+          </Button>
         </div>
       </div>
     )
@@ -89,146 +170,110 @@ export default function CareerWalletClient() {
 
   const rank = getRank(wallet.xp)
   const level = getLevel(wallet.xp)
+  const nextXP = getNextLevelXP(wallet.xp)
   const progress = getLevelProgress(wallet.xp)
-  const nextLevelXP = getNextLevelXP(wallet.xp)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-            💰 Career Wallet
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400">
-            Track your learning progress and achievements
-          </p>
-        </div>
+    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-emerald-500/30 pb-20">
+      <main className="max-w-7xl mx-auto px-6 py-12">
 
-        {/* Profile Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden mb-8">
-          <div className={`bg-gradient-to-r ${rank.color} p-8 text-white`}>
-            <div className="flex items-center gap-6">
-              <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-5xl">
-                {rank.icon}
-              </div>
-              <div className="flex-1">
-                <h2 className="text-3xl font-bold mb-1">{user?.name || 'Student'}</h2>
-                <p className="text-xl opacity-90">{rank.name}</p>
-                <div className="mt-4 flex items-center gap-4">
-                  <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg">
-                    <span className="text-sm opacity-75">Level</span>
-                    <p className="text-2xl font-bold">{level}</p>
-                  </div>
-                  <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg">
-                    <span className="text-sm opacity-75">XP</span>
-                    <p className="text-2xl font-bold">{wallet.xp}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Career Wallet</h1>
+            <p className="text-[#a1a1aa] text-sm mt-2 font-mono">
+              TRACKING ASSETS FOR: {user?.name?.toUpperCase()}
+            </p>
           </div>
 
-          <div className="p-8">
-            {/* XP Progress */}
-            <div className="mb-6">
-              <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
-                <span>Progress to Level {level + 1}</span>
-                <span>{wallet.xp} / {nextLevelXP} XP</span>
-              </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
-                <div
-                  className={`bg-gradient-to-r ${rank.color} h-4 rounded-full transition-all duration-300`}
-                  style={{ width: `${progress}%` }}
-                ></div>
-              </div>
+          <div className="flex items-center gap-4 bg-[#111111] border border-[#262626] p-2 rounded-lg pr-6">
+            <div className="w-12 h-12 bg-[#1a1a1a] rounded flex items-center justify-center text-2xl">
+              {rank.icon}
             </div>
-
-            {/* Stats Grid */}
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="text-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-800">
-                <p className="text-4xl mb-2">💳</p>
-                <p className="text-3xl font-bold text-green-600 dark:text-green-400">${wallet.totalDebtPaid.toFixed(2)}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Debt Paid</p>
-              </div>
-
-              <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
-                <p className="text-4xl mb-2">⭐</p>
-                <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{wallet.xp}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Total XP</p>
-              </div>
-
-              <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-                <p className="text-4xl mb-2">🏆</p>
-                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{wallet.badges.length}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Badges Earned</p>
-              </div>
+            <div>
+              <p className="text-[10px] text-[#525252] uppercase font-bold tracking-wider">Current Rank</p>
+              <p className={`font-bold ${rank.color}`}>{rank.name}</p>
             </div>
           </div>
         </div>
 
-        {/* Badges Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-            <span>🏅</span>
-            <span>Achievements & Badges</span>
-          </h2>
+        {/* Level Progress Bar */}
+        <div className="mb-12">
+          <div className="flex justify-between text-xs font-mono text-[#737373] mb-2 uppercase">
+            <span>Level {level}</span>
+            <span>{wallet.xp} / {nextXP} XP</span>
+          </div>
+          <div className="h-2 w-full bg-[#1a1a1a] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full transition-all duration-1000 ease-out"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Financial Overview Grid (3 Core Metrics) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+
+          {/* 1. Net Liability Saved (Green) */}
+          <StatCard
+            label="Net Liability Saved"
+            value={`$${wallet.totalDebtPaid.toLocaleString()}`}
+            subValue="ESTIMATED COST AVOIDANCE"
+            icon={TrendingUp}
+            accentColor="text-emerald-500"
+            className="border-emerald-900/20 bg-emerald-950/5"
+          />
+
+          {/* 2. Total XP (Purple) */}
+          <StatCard
+            label="Experience Points"
+            value={wallet.xp.toLocaleString()}
+            subValue="CUMULATIVE SCORE"
+            icon={Zap}
+            accentColor="text-purple-500"
+          />
+
+          {/* 3. Badges (Yellow) */}
+          <StatCard
+            label="Decorations Earned"
+            value={wallet.badges.length.toString()}
+            subValue="MEDALS & CERTIFICATIONS"
+            icon={Award}
+            accentColor="text-yellow-500"
+          />
+        </div>
+
+        {/* Badges / Assets Section */}
+        <div>
+          <div className="flex items-center gap-3 mb-6">
+            <Award className="w-5 h-5 text-[#737373]" />
+            <h2 className="text-xl font-bold text-white">Asset Inventory</h2>
+          </div>
 
           {wallet.badges.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-6xl mb-4">🎯</p>
-              <p className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No badges yet</p>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Start fixing issues to earn your first badge!
+            <div className="border border-dashed border-[#262626] rounded-xl p-12 text-center bg-[#0a0a0a]">
+              <div className="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center mx-auto mb-4">
+                <Target className="w-8 h-8 text-[#525252]" />
+              </div>
+              <h3 className="text-lg font-medium text-white mb-2">No Assets Aquired</h3>
+              <p className="text-[#737373] text-sm max-w-sm mx-auto mb-6">
+                Complete learning modules and fix security vulnerabilities to earn badges and increase your net worth.
               </p>
-              <button
-                onClick={() => router.push('/learning')}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition-all"
-              >
-                Start Learning
-              </button>
+              <Button className="bg-white text-black hover:bg-gray-200" onClick={() => router.push('/dashboard')}>
+                Start Auditing
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {wallet.badges.map((badge: any, index: number) => (
-                <div key={index} className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-2 border-yellow-200 dark:border-yellow-800 rounded-xl p-6 hover:scale-105 transition-transform">
-                  <div className="text-center">
-                    <p className="text-5xl mb-3">{badge.icon || '🏆'}</p>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">{badge.name || 'Achievement'}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                      {badge.description || 'Badge earned!'}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {badge.earnedAt ? new Date(badge.earnedAt).toLocaleDateString() : 'Recently earned'}
-                    </p>
-                  </div>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {wallet.badges.map((badge, idx) => (
+                <BadgeCard key={badge.id || idx} badge={badge} />
               ))}
             </div>
           )}
         </div>
 
-        {/* Quick Actions */}
-        <div className="mt-8 grid md:grid-cols-2 gap-6">
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-6 hover:shadow-lg transition-all text-left"
-          >
-            <p className="text-3xl mb-2">📊</p>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">View Dashboard</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">See all your code analyses</p>
-          </button>
-
-          <button
-            onClick={() => router.push('/learning')}
-            className="bg-gradient-to-br from-purple-600 to-blue-600 text-white rounded-xl p-6 hover:shadow-lg transition-all text-left"
-          >
-            <p className="text-3xl mb-2">🚀</p>
-            <h3 className="text-xl font-bold mb-1">Continue Learning</h3>
-            <p className="text-sm opacity-90">Start a new learning session</p>
-          </button>
-        </div>
-      </div>
+      </main>
     </div>
   )
 }

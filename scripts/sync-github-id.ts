@@ -22,21 +22,21 @@ async function syncGithubId() {
           acc => acc.provider === 'oauth_github'
         );
 
-        if (githubAccount?.providerUserId) {
-          const githubId = parseInt(githubAccount.providerUserId);
+        if ((githubAccount as any)?.providerUserId || (githubAccount as any)?.externalId) {
+          const githubId = parseInt((githubAccount as any)?.providerUserId || (githubAccount as any)?.externalId);
 
           // Update database
           await prisma.user.update({
             where: { id: dbUser.id },
             data: {
               githubId: githubId,
-              githubUsername: githubAccount.username || null
+              githubUsername: githubAccount?.username || null
             }
           });
 
           console.log(`✅ Updated user ${dbUser.email}:`);
           console.log(`   GitHub ID: ${githubId}`);
-          console.log(`   GitHub Username: ${githubAccount.username}\n`);
+          console.log(`   GitHub Username: ${githubAccount?.username}\n`);
         } else {
           console.log(`⚠️  User ${dbUser.email} has no GitHub account connected\n`);
         }

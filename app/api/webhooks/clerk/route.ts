@@ -57,7 +57,7 @@ export async function POST(req: Request) {
     const githubAccount = external_accounts?.find((acc: any) => acc.provider === 'oauth_github');
     const githubUsername = githubAccount?.username || null;
     // Try both snake_case (webhook) and camelCase (just in case)
-    const rawGithubId = githubAccount?.provider_user_id || githubAccount?.providerUserId;
+    const rawGithubId = githubAccount?.provider_user_id || (githubAccount as any)?.providerUserId;
     const githubId = rawGithubId ? parseInt(rawGithubId) : null;
 
     try {

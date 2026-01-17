@@ -20,7 +20,7 @@ export async function explainImpactWithGemini(
   diffContext: string
 ): Promise<string> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = `
 You are a friendly coding mentor writing a SHORT, encouraging GitHub PR comment for a student.

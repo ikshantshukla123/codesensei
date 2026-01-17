@@ -4,17 +4,18 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   req: Request,
-  { params }: { params: { analysisId: string } }
+  { params }: { params: Promise<{ analysisId: string }> }
 ) {
   try {
     const { userId } = await auth()
+    const { analysisId } = await params;
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const analysis = await prisma.analysis.findUnique({
-      where: { id: params.analysisId },
+      where: { id: analysisId },
       include: {
         repository: {
           select: {

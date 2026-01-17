@@ -45,6 +45,9 @@ export async function POST() {
     // Check for provider user ID (handle both camelCase and snake_case just in case)
     // IMPORTANT FIX: Clerk's `currentUser` object uses `externalId` for the provider's user ID (GitHub ID)
     const rawGithubId = (githubAccount as any)?.providerUserId || (githubAccount as any)?.provider_user_id || (githubAccount as any)?.externalId;
+    console.log(`🔍 Debug: rawGithubId found: ${rawGithubId}`);
+
+    const githubId = rawGithubId ? parseInt(rawGithubId) : null;
 
     if (!email) {
       return NextResponse.json({ error: 'Email not found' }, { status: 400 })
