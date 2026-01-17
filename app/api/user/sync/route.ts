@@ -28,8 +28,23 @@ export async function POST() {
     const githubAccount = user.externalAccounts.find(
       account => account.provider === 'oauth_github'
     )
+
+    // DEBUG: Log keys to see what is actually available
+    if (githubAccount) {
+      console.log('🔍 Debug: GitHub Account Keys:', Object.keys(githubAccount));
+      console.log('🔍 Debug: GitHub Account values (partial):', JSON.stringify({
+        ...githubAccount,
+        verification: 'omitted'
+      }, null, 2));
+    } else {
+      console.log('❌ Debug: No GitHub account found in externalAccounts');
+    }
+
     const githubUsername = githubAccount?.username || null
-    const githubId = githubAccount?.providerUserId ? parseInt(githubAccount.providerUserId) : null
+
+    // Check for provider user ID (handle both camelCase and snake_case just in case)
+    // IMPORTANT FIX: Clerk's `currentUser` object uses `externalId` for the provider's user ID (GitHub ID)
+    const rawGithubId = (githubAccount as any)?.providerUserId || (githubAccount as any)?.provider_user_id || (githubAccount as any)?.externalId;
 
     if (!email) {
       return NextResponse.json({ error: 'Email not found' }, { status: 400 })
@@ -73,17 +88,24 @@ export async function POST() {
       });
     }
 
-    // Initialize wallet if it doesn't exist
-    await prisma.wallet.upsert({
-      where: { userId },
-      update: {},
-      create: {
-        userId,
-        totalDebtPaid: 0,
-        xp: 0,
-        badges: [],
-      },
-    });
+    // Initialize wallet if it doesn't exist (handle race conditions gracefully)
+    try {
+      await prisma.wallet.upsert({
+        where: { userId },
+        update: {},
+        create: {
+          userId,
+          totalDebtPaid: 0,
+          xp: 0,
+          badges: [],
+        },
+      });
+    } catch (e) {
+      // Ignore unique constraint violation if wallet was created by webhook logic
+      if ((e as any).code !== 'P2002') {
+        console.error('Wallet creation error:', e);
+      }
+    }
 
     return NextResponse.json({
       success: true,

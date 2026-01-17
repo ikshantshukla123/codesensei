@@ -2,6 +2,7 @@ import { Webhook } from 'svix'
 import { headers } from 'next/headers'
 import { WebhookEvent } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
+import { syncRepositoriesForUser } from '@/lib/github/client'
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET
@@ -52,13 +53,19 @@ export async function POST(req: Request) {
       ? `${first_name} ${last_name || ''}`.trim()
       : username;
 
-    // 2. Extract GitHub ID safely - using any to access providerUserId
+    // 2. Extract GitHub ID safely - Webhook payload uses snake_case (provider_user_id)
     const githubAccount = external_accounts?.find((acc: any) => acc.provider === 'oauth_github');
     const githubUsername = githubAccount?.username || null;
-    const githubId = githubAccount?.providerUserId ? parseInt(githubAccount.providerUserId) : null;
+    // Try both snake_case (webhook) and camelCase (just in case)
+    const rawGithubId = githubAccount?.provider_user_id || githubAccount?.providerUserId;
+    const githubId = rawGithubId ? parseInt(rawGithubId) : null;
 
     try {
-      // 3. Check for duplicate email with different user ID
+      // 3. Check for existing user to determine if this is a new GitHub connection
+      const existingUser = await prisma.user.findUnique({ where: { id: id } });
+      const isNewGithubConnection = !existingUser?.githubId && githubId !== null;
+
+      // Check for duplicate email with different user ID
       const userWithEmail = await prisma.user.findUnique({
         where: { email: email_addresses[0].email_address }
       });
@@ -103,6 +110,14 @@ export async function POST(req: Request) {
           badges: []
         }
       });
+
+      // 6. If this is a new GitHub connection, sync repositories in background
+      if (isNewGithubConnection && githubId !== null) {
+        console.log(`🔄 New GitHub connection detected, syncing repositories...`);
+        syncRepositoriesForUser(id, githubId).catch(error => {
+          console.error('❌ Background repository sync failed:', error);
+        });
+      }
 
     } catch (dbError) {
       console.error('❌ Database Sync Error:', dbError);

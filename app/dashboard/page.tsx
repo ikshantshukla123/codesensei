@@ -1,247 +1,227 @@
-import { auth, currentUser } from '@clerk/nextjs/server'
+"use client";
+
+import { useUser } from '@clerk/nextjs'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { Github, ExternalLink, Zap, Shield, TrendingUp, Code2, Sparkles, ArrowRight, Calendar } from 'lucide-react'
-import UserSyncComponent from '@/components/UserSyncComponent'
-import { prisma } from '@/lib/prisma'
+import { useState, useEffect } from "react";
+import { Github, Plus, ArrowRight, ShieldAlert, Activity, GitBranch } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 
-export default async function DashboardPage() {
-  const { userId } = await auth()
-
-  if (!userId) {
-    redirect('/sign-in')
-  }
-
-  const user = await currentUser()
-
-  if (!user) {
-    redirect('/sign-in')
-  }
-
-  // Check if user has GitHub connected
-  const githubAccount = user.externalAccounts.find(
-    account => account.provider === 'oauth_github'
-  )
-  const hasGitHub = !!githubAccount
-
-  // Fetch user data and recent repositories from database
-  const dbUser = await prisma.user.findUnique({
-    where: { id: userId },
-    include: {
-      wallet: true,
-      repositories: {
-        take: 5,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          analyses: {
-            take: 1,
-            orderBy: { createdAt: 'desc' }
-          }
-        }
-      }
-    }
-  })
-
-  // Calculate metrics
-  const totalRepos = dbUser?.repositories.length || 0
-  const walletXP = dbUser?.wallet?.xp || 0
-  const debtPaid = dbUser?.wallet?.totalDebtPaid || 0
-
-  // GitHub App installation URL
-  const githubAppInstallUrl = process.env.NEXT_PUBLIC_GITHUB_APP_INSTALL_URL ||
-    `https://github.com/apps/${process.env.NEXT_PUBLIC_GITHUB_APP_NAME || 'codesensei'}/installations/new`
-
+// Inline Premium Card
+function PremiumCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
-      <UserSyncComponent />
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="mb-8 border-b border-[#262626] pb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold text-white mb-2">
-                Welcome back, {user.firstName || 'Developer'} 👋
-              </h1>
-              <p className="text-[#a1a1aa] text-lg">
-                Transform your code into career capital
-              </p>
-            </div>
-            <Link
-              href="/wallet"
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-semibold transition-all flex items-center gap-2"
-            >
-              <Sparkles className="w-5 h-5" />
-              View Wallet
-            </Link>
-          </div>
+    <div className={`bg-[#111111] border border-[#262626] rounded-xl p-6 hover:border-[#404040] transition-all duration-300 ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className="min-h-screen bg-[#0a0a0a] text-white p-6 pb-20">
+      <div className="max-w-7xl mx-auto space-y-12 py-12">
+        <div className="flex justify-between items-center">
+          <div className="h-10 w-48 bg-[#1a1a1a] rounded animate-pulse" />
+          <div className="h-10 w-32 bg-[#1a1a1a] rounded animate-pulse" />
         </div>
 
-        {/* GitHub App Installation */}
-        {hasGitHub && (
-          <div className="mb-8 bg-gradient-to-r from-[#1a1a1a] to-[#0f0f0f] border border-[#262626] rounded-xl p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-                  <Github className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-1">
-                    Install CodeSensei GitHub App
-                  </h3>
-                  <p className="text-sm text-[#a1a1aa]">
-                    Connect repositories to enable AI-powered PR analysis • @{githubAccount?.username}
-                  </p>
-                </div>
-              </div>
-              <a
-                href={githubAppInstallUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-6 py-3 bg-white text-black font-semibold rounded-lg hover:bg-gray-100 transition-all flex items-center gap-2 group"
-              >
-                <Zap className="w-5 h-5" />
-                Install App
-                <ExternalLink className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </a>
-            </div>
-          </div>
-        )}
-
-        {!hasGitHub && (
-          <div className="mb-8 bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-xl p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center">
-                  <Github className="w-6 h-6 text-yellow-500" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-1">
-                    Connect Your GitHub Account
-                  </h3>
-                  <p className="text-sm text-[#a1a1aa]">
-                    Link your GitHub to start analyzing repositories and earning XP
-                  </p>
-                </div>
-              </div>
-              <Link
-                href="/profile"
-                className="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold rounded-lg transition-all flex items-center gap-2"
-              >
-                Connect Now
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-            </div>
-          </div>
-        )}
-
-        {/* Stats Grid */}
-        <div className="grid md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-[#1a1a1a] border border-[#262626] rounded-xl p-6 hover:border-green-500/50 transition-colors">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-green-500" />
-              </div>
-            </div>
-            <p className="text-sm text-[#a1a1aa] mb-1">Debt Paid</p>
-            <p className="text-3xl font-bold text-white">${debtPaid.toFixed(0)}</p>
-          </div>
-
-          <div className="bg-[#1a1a1a] border border-[#262626] rounded-xl p-6 hover:border-purple-500/50 transition-colors">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-purple-500" />
-              </div>
-            </div>
-            <p className="text-sm text-[#a1a1aa] mb-1">Total XP</p>
-            <p className="text-3xl font-bold text-white">{walletXP}</p>
-          </div>
-
-          <div className="bg-[#1a1a1a] border border-[#262626] rounded-xl p-6 hover:border-blue-500/50 transition-colors">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
-                <Code2 className="w-5 h-5 text-blue-500" />
-              </div>
-            </div>
-            <p className="text-sm text-[#a1a1aa] mb-1">Repositories</p>
-            <p className="text-3xl font-bold text-white">{totalRepos}</p>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="h-40 bg-[#1a1a1a] rounded-xl animate-pulse" />
+          <div className="h-40 bg-[#1a1a1a] rounded-xl animate-pulse" />
+          <div className="h-40 bg-[#1a1a1a] rounded-xl animate-pulse" />
         </div>
 
-        {/* Recent Repositories */}
-        {dbUser?.repositories && dbUser.repositories.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-white">Recent Repositories</h2>
-            </div>
-            <div className="bg-[#1a1a1a] border border-[#262626] rounded-xl overflow-hidden">
-              <div className="divide-y divide-[#262626]">
-                {dbUser.repositories.map((repo) => {
-                  const latestAnalysis = repo.analyses[0]
-                  const riskScore = latestAnalysis?.riskScore || 0
-                  const riskColor = riskScore > 70 ? 'text-red-400' : riskScore > 40 ? 'text-yellow-400' : 'text-green-400'
-
-                  return (
-                    <Link
-                      key={repo.id}
-                      href={`/dashboard/${repo.id}`}
-                      className="block p-6 hover:bg-[#262626]/50 transition-colors group"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 bg-[#262626] rounded-lg flex items-center justify-center group-hover:bg-[#333333] transition-colors">
-                            <Code2 className="w-5 h-5 text-[#a1a1aa]" />
-                          </div>
-                          <div>
-                            <h3 className="text-white font-semibold group-hover:text-blue-400 transition-colors">
-                              {repo.name}
-                            </h3>
-                            <p className="text-sm text-[#a1a1aa] flex items-center gap-2 mt-1">
-                              <Calendar className="w-3 h-3" />
-                              {new Date(repo.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-6">
-                          {latestAnalysis && (
-                            <div className="text-right">
-                              <p className="text-sm text-[#a1a1aa] mb-1">Latest Risk Score</p>
-                              <p className={`text-2xl font-bold ${riskColor}`}>{riskScore}</p>
-                            </div>
-                          )}
-                          <ArrowRight className="w-5 h-5 text-[#a1a1aa] group-hover:text-white group-hover:translate-x-1 transition-all" />
-                        </div>
-                      </div>
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {(!dbUser?.repositories || dbUser.repositories.length === 0) && hasGitHub && (
-          <div className="bg-[#1a1a1a] border border-dashed border-[#262626] rounded-xl p-12 text-center">
-            <div className="w-16 h-16 bg-[#262626] rounded-full flex items-center justify-center mx-auto mb-4">
-              <Shield className="w-8 h-8 text-[#a1a1aa]" />
-            </div>
-            <h3 className="text-xl font-semibold text-white mb-2">No Repositories Yet</h3>
-            <p className="text-[#a1a1aa] mb-6 max-w-md mx-auto">
-              Install the GitHub App on your repositories to start receiving AI-powered PR analysis
-            </p>
-            <a
-              href={githubAppInstallUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-semibold rounded-lg hover:bg-gray-100 transition-all"
-            >
-              <Zap className="w-5 h-5" />
-              Install GitHub App
-              <ExternalLink className="w-4 h-4" />
-            </a>
-          </div>
-        )}
+        <div className="h-64 bg-[#1a1a1a] rounded-xl animate-pulse" />
       </div>
     </div>
-  )
-}   
+  );
+}
+
+interface Repository {
+  id: string;
+  name: string;
+  createdAt: string;
+  analyses: {
+    riskScore: number;
+    createdAt: string;
+  }[];
+}
+
+export default function Dashboard() {
+  const { isLoaded, isSignedIn, user } = useUser();
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<any>(null);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+
+    if (!isSignedIn) {
+      redirect('/sign-in');
+    }
+
+    // Force sync user data first
+    fetch('/api/user/sync', { method: 'POST' })
+      .then(() => {
+        // Then fetch dashboard data
+        return fetch('/api/dashboard/stats');
+      })
+      .then(res => {
+        if (res.status === 401) return null;
+        if (res.ok) return res.json();
+        return null;
+      })
+      .then(data => {
+        if (data) setData(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to fetch dashboard data", err);
+        setLoading(false);
+      });
+  }, [isLoaded, isSignedIn]);
+
+  if (!isLoaded || loading) return <LoadingSkeleton />;
+
+  // Calculate stats from data if not provided directly
+  const repositories = data?.repositories || [];
+  const totalRepos = data?.stats?.totalRepos || repositories.length;
+  const avgRiskScore = data?.stats?.avgRiskScore || 0;
+  const criticalIssues = data?.stats?.highRisk || 0;
+
+  // Check if GitHub is connected to Clerk account
+  const hasGitHubConnection = user?.externalAccounts.some(acc => acc.provider === 'oauth_github');
+
+  // URL for connecting GitHub via Clerk (redirects to profile where they can add it, or trigger flow)
+  // Since we don't have a direct "connect" link, we can point to user profile or use Clerk's userProfile component
+  // Better yet, we can't trigger OAuth flow easily from here without mounting <UserProfile />.
+  // We'll direct them to the profile page to connect accounts.
+  const connectGitHubUrl = "/profile";
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-white/10 pb-20">
+      {/* Scrollbar Hide */}
+      <style jsx global>{`
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+
+      <main className="max-w-7xl mx-auto px-6 py-12 space-y-12">
+
+        {/* Title Section */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+          <div>
+            <h1 className="text-3xl font-bold text-white tracking-tight">Security Overview</h1>
+            <p className="text-[#a1a1aa] text-sm mt-2 max-w-lg leading-relaxed">
+              Real-time vulnerability monitoring for {user?.fullName || 'you'}.
+            </p>
+          </div>
+
+          {hasGitHubConnection ? (
+            <Link href={process.env.NEXT_PUBLIC_GITHUB_APP_INSTALL_URL || "#"}>
+              <Button className="bg-white text-black hover:bg-gray-200 border-0 font-medium">
+                <Plus className="w-4 h-4 mr-2" /> Add Repository
+              </Button>
+            </Link>
+          ) : (
+            <Link href="/profile">
+              <Button className="bg-yellow-500 text-black hover:bg-yellow-400 border-0 font-medium">
+                <Github className="w-4 h-4 mr-2" /> Connect GitHub
+              </Button>
+            </Link>
+          )}
+        </div>
+
+        {/* High-Level Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <PremiumCard className="relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <GitBranch className="w-24 h-24 text-white" />
+            </div>
+            <p className="text-sm font-medium text-[#737373] uppercase tracking-wider">Active Repositories</p>
+            <p className="text-4xl font-bold text-white mt-4">{totalRepos}</p>
+          </PremiumCard>
+
+          <PremiumCard>
+            <p className="text-sm font-medium text-[#737373] uppercase tracking-wider">Avg. Risk Score</p>
+            <div className="flex items-baseline gap-2 mt-4">
+              <p className={`text-4xl font-bold ${avgRiskScore > 50 ? 'text-red-500' : 'text-emerald-500'}`}>
+                {avgRiskScore}
+              </p>
+              <span className="text-sm text-[#525252]">/100</span>
+            </div>
+            <div className="mt-4 h-1.5 w-full bg-[#262626] rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full ${avgRiskScore > 50 ? 'bg-red-500' : 'bg-emerald-500'}`}
+                style={{ width: `${avgRiskScore}%` }}
+              />
+            </div>
+          </PremiumCard>
+
+          <PremiumCard className="border-red-900/20 bg-red-950/5">
+            <p className="text-sm font-medium text-red-400 uppercase tracking-wider">Critical Vulnerabilities</p>
+            <p className="text-4xl font-bold text-red-500 mt-4">{criticalIssues}</p>
+          </PremiumCard>
+        </div>
+
+        {/* Repositories List */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-white">Repositories</h2>
+          </div>
+
+          {repositories.length === 0 ? (
+            <div className="border border-dashed border-[#262626] rounded-xl p-12 text-center bg-[#0a0a0a]">
+              <h3 className="text-lg text-white mb-2">No repositories connected</h3>
+              <p className="text-[#737373] text-sm mb-6">
+                {hasGitHubConnection
+                  ? "Install the GitHub App to start monitoring your code."
+                  : "Connect your GitHub account to start monitoring your code."}
+              </p>
+
+              {hasGitHubConnection ? (
+                <Link href={process.env.NEXT_PUBLIC_GITHUB_APP_INSTALL_URL || "#"}>
+                  <Button variant="primary" className="bg-white text-black hover:bg-gray-200">
+                    <Plus className="w-4 h-4 mr-2" /> Install GitHub App
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/profile">
+                  <Button variant="outline" className="border-[#262626] text-white hover:bg-[#262626] hover:text-white">
+                    <Github className="w-4 h-4 mr-2" /> Connect GitHub Account
+                  </Button>
+                </Link>
+              )}
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {repositories.map((repo: any) => (
+                <div key={repo.id} className="bg-[#111111] border border-[#262626] rounded-xl p-4 flex items-center justify-between hover:border-[#404040] transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-[#1a1a1a] rounded-lg flex items-center justify-center">
+                      <Github className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-white">{repo.name}</h3>
+                      <p className="text-xs text-[#737373]">Updated {new Date(repo.updatedAt).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <div className="text-right">
+                      <p className="text-xs text-[#737373] uppercase tracking-wider mb-1">Risk Score</p>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500">
+                        {repo.analyses?.[0]?.riskScore > 50 ? 'High Risk' : 'Low Risk'}
+                      </span>
+                    </div>
+                    <Button variant="ghost" size="sm" className="text-[#a1a1aa] hover:text-white">
+                      <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}
