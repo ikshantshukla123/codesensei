@@ -23,7 +23,7 @@ export default async function AllRepositoriesPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-green-500/30 pb-20">
       <main className="max-w-7xl mx-auto px-6 py-12">
-        
+
         {/* Header */}
         <div className="mb-12">
           <Link href="/dashboard" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition mb-6">

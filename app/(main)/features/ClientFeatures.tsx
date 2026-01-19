@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 
 // Lazy load heavy components for code splitting
 const HeroSection = lazy(() => import('./components/HeroSection'))
+const AILearningPlatform = lazy(() => import('./components/AILearningPlatform'))
 const LiabilityReceipt = lazy(() => import('./components/LiabilityReceipt'))
 const TrinityKnowledge = lazy(() => import('./components/TrinityKnowledge'))
 const DiffMatchFixer = lazy(() => import('./components/DiffMatchFixer'))
@@ -107,6 +108,10 @@ export default function ClientFeatures() {
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <Suspense fallback={<HeroSkeleton />}>
         <HeroSection />
+      </Suspense>
+
+      <Suspense fallback={<SectionSkeleton />}>
+        <AILearningPlatform />
       </Suspense>
 
       <Suspense fallback={<SectionSkeleton />}>

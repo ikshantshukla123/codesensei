@@ -95,12 +95,16 @@ export default async function DashboardPage() {
   if (!userId) redirect('/sign-in')
 
   // 2. Fetch or create user in Prisma - OPTIMIZED: Only fetch 5 most recent repos
+  // Prioritize repos with scans at the top
   let user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
       repositories: {
-        take: 5, // Only fetch 5 most recent for performance
-        orderBy: { createdAt: 'desc' },
+        take: 5,
+        orderBy: [
+          { analyses: { _count: 'desc' } }, // Repos with scans first
+          { createdAt: 'desc' }              // Then most recent
+        ],
         include: {
           analyses: {
             take: 1,

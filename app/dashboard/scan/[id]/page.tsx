@@ -2,13 +2,14 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle, ShieldAlert, BookOpen, Coins, Lock, Brain, AlertCircle, TrendingDown, Wrench, BookMarked, Award } from "lucide-react";
+import { ShieldAlert, BookOpen, Coins, Lock, Brain, AlertCircle, TrendingDown, Wrench, Award, CheckCircle } from "lucide-react";
 import { generateFullLesson } from "@/lib/ai/providers/gemini";
 import { Button } from "@/components/ui/Button";
 import { revalidatePath } from "next/cache";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import LessonSidebar from './LessonSidebar';
 
 // --- SERVER ACTIONS ---
 
@@ -97,7 +98,6 @@ export default async function ScanLessonPage({ params }: { params: Promise<{ id:
   );
 
   const bugs = analysis.bugs as any[];
-  const activeBugIndex = 0; // Could be controlled by URL params in future
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a0a0a] via-[#0f0f0f] to-[#0a0a0a] text-white">
@@ -105,65 +105,12 @@ export default async function ScanLessonPage({ params }: { params: Promise<{ id:
       {/* SPLIT VIEW LAYOUT */}
       <div className="flex flex-col lg:flex-row h-screen">
 
-        {/* LEFT SIDEBAR - Curriculum Navigator */}
-        <aside className="lg:w-96 border-b lg:border-r border-white/10 bg-black/40 backdrop-blur-xl overflow-y-auto">
-          <div className="sticky top-0 bg-black/80 backdrop-blur-md border-b border-white/10 z-10">
-            <div className="p-6">
-              <Link href="/dashboard" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition mb-4">
-                <ArrowLeft className="w-4 h-4" />
-                <span className="text-sm font-medium">Back to Dashboard</span>
-              </Link>
-              <div className="mt-4">
-                <h1 className="text-xl font-bold text-white font-serif">Security Curriculum</h1>
-                <p className="text-sm text-gray-500 mt-1 font-mono">{analysis.repository.name}</p>
-                <p className="text-xs text-gray-600 mt-0.5">PR #{analysis.prNumber} • {bugs.length} Modules</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Course Modules */}
-          <nav className="p-4 space-y-2">
-            {bugs.map((bug, index) => {
-              const isCritical = bug.severity === "CRITICAL" || bug.severity === "HIGH";
-              const isActive = index === activeBugIndex;
-              const isCompleted = bug.claimed;
-
-              return (
-                <a
-                  key={index}
-                  href={`#lesson-${index}`}
-                  className={`block p-4 rounded-lg border transition-all ${isActive
-                      ? 'bg-white/10 border-green-500/50 shadow-lg shadow-green-500/10'
-                      : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
-                    }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-lg ${isCritical ? 'bg-red-500/10' : 'bg-yellow-500/10'}`}>
-                      {isCompleted ? (
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                      ) : (
-                        <ShieldAlert className={`w-5 h-5 ${isCritical ? 'text-red-400' : 'text-yellow-400'}`} />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${isCritical ? 'bg-red-500 text-black' : 'bg-yellow-500 text-black'
-                          }`}>
-                          {bug.severity}
-                        </span>
-                        {bug.lessonContent && !isCompleted && (
-                          <BookMarked className="w-3 h-3 text-green-500" />
-                        )}
-                      </div>
-                      <h3 className="text-sm font-semibold text-white truncate">{bug.type}</h3>
-                      <p className="text-xs text-gray-500 mt-1 font-mono">{bug.file}:{bug.line}</p>
-                    </div>
-                  </div>
-                </a>
-              );
-            })}
-          </nav>
-        </aside>
+        {/* LEFT SIDEBAR - Curriculum Navigator with Scroll Spy */}
+        <LessonSidebar
+          bugs={bugs}
+          repositoryName={analysis.repository.name}
+          prNumber={analysis.prNumber}
+        />
 
         {/* RIGHT PANE - Reading Area */}
         <main className="flex-1 overflow-y-auto">
@@ -173,8 +120,12 @@ export default async function ScanLessonPage({ params }: { params: Promise<{ id:
               const isCritical = bug.severity === "CRITICAL" || bug.severity === "HIGH";
 
               return (
-                <section key={index} id={`lesson-${index}`} className="mb-24 scroll-mt-8">
-
+                <section
+                  key={index}
+                  id={`lesson-${index}`}
+                  data-lesson-index={index}
+                  className="mb-24 scroll-mt-8"
+                >
                   {/* Lesson Header */}
                   <div className="mb-12">
                     <div className="flex items-start gap-6 mb-6">
@@ -228,12 +179,12 @@ export default async function ScanLessonPage({ params }: { params: Promise<{ id:
 
                             return !inline && match ? (
                               <div className={`my-8 rounded-xl overflow-hidden border-2 ${isBadCode ? 'border-red-500/30 bg-red-950/10' :
-                                  isFixedCode ? 'border-green-500/30 bg-green-950/10' :
-                                    'border-white/10'
+                                isFixedCode ? 'border-green-500/30 bg-green-950/10' :
+                                  'border-white/10'
                                 }`}>
                                 <div className={`px-5 py-3 flex items-center justify-between ${isBadCode ? 'bg-red-500/10' :
-                                    isFixedCode ? 'bg-green-500/10' :
-                                      'bg-white/5'
+                                  isFixedCode ? 'bg-green-500/10' :
+                                    'bg-white/5'
                                   }`}>
                                   <span className="text-sm font-mono font-semibold text-gray-400">{match[1]}</span>
                                   {isBadCode && <span className="text-xs font-bold text-red-400 uppercase">⚠️ Vulnerable Code</span>}
