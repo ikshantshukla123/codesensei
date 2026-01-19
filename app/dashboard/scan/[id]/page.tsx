@@ -10,6 +10,7 @@ import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { earnCoins, updateDailyStreak } from "@/lib/wallet/actions";
+import LessonSidebar from './LessonSidebar';
 
 // --- SERVER ACTIONS ---
 
