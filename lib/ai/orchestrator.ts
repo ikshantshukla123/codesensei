@@ -12,6 +12,33 @@ interface PullRequestData {
   diffUrl: string;
 }
 
+// Helper function to generate compact GitHub comment table
+function generateCompactTable(bugs: any[], dashboardUrl: string) {
+  // Take top 3 most critical bugs
+  const topBugs = bugs
+    .sort((a, b) => (a.severity === 'CRITICAL' ? -1 : 1))
+    .slice(0, 3);
+
+  const rows = topBugs.map((bug) => {
+    const icon = bug.severity === 'CRITICAL' || bug.severity === 'HIGH' ? '🔴' : '⚠️';
+    // Truncate description to keep table tidy
+    const desc = bug.description.length > 50 ? bug.description.substring(0, 47) + '...' : bug.description;
+    return `| ${icon} **${bug.severity}** | \`${bug.file}\`:${bug.line} | ${desc} |`;
+  }).join('\n');
+
+  return `
+## 🛡️ CodeSensei Security Report
+**${bugs.length} Issues Found** | [View Full Lesson & Fixes](${dashboardUrl})
+
+| Risk | File | Issue |
+| :--- | :--- | :--- |
+${rows}
+
+> 💡 **Learning Opportunity:** We've generated a personalized lesson for this code.
+> [**👉 Click here to Earn XP & Fix these issues**](${dashboardUrl})
+`;
+}
+
 export async function analyzePullRequest(data: PullRequestData) {
   console.log(`🚀 Starting Student Code Analysis for PR #${data.prNumber} (${data.owner}/${data.repo})...`);
 
@@ -71,12 +98,17 @@ export async function analyzePullRequest(data: PullRequestData) {
     console.log(`💾 Saving Analysis (Learning Score: ${100 - riskScore}, Issues: ${totalIssues})...`);
 
     const cleanBugs = bugReport.bugs.map((b: any) => ({
+      // Add an ID to each bug so we can track if it's "learned" later
+      id: Math.random().toString(36).substr(2, 9),
       type: b.type || "Issue",
       severity: b.severity || "LOW",
       description: b.description || "No description provided",
       file: b.file || "unknown",
       line: b.line || 0,
-      recommendation: b.recommendation || "Review the code carefully"
+      recommendation: b.recommendation || "Review the code carefully",
+      // These will be filled by the Dashboard when the user clicks "Learn"
+      lessonContent: null,
+      claimed: false
     }));
 
     try {
@@ -95,15 +127,18 @@ export async function analyzePullRequest(data: PullRequestData) {
 
       console.log(`✅ SUCCESS: Analysis saved with ID: ${analysis.id}`);
 
-      // 7. Post to GitHub with Learning Dashboard Link
+      // 7. Post Compact Comment to GitHub
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
       const cleanBaseUrl = baseUrl.replace(/\/+$/, '');
-      const dashboardUrl = `${cleanBaseUrl}/learning/receipt/${analysis.id}`;
+      const dashboardUrl = `${cleanBaseUrl}/dashboard/scan/${analysis.id}`;
 
       console.log(`📊 Learning Dashboard URL: ${dashboardUrl}`);
-      const reportWithLink = `${finalReport}\n\n---\n[📚 Start Learning Journey](${dashboardUrl}) | [💰 View Your Wallet](${cleanBaseUrl}/wallet)`;
 
-      await postComment(data.owner, data.repo, data.prNumber, reportWithLink, data.installationId);
+      // Use the new compact generator
+      const compactComment = generateCompactTable(cleanBugs, dashboardUrl);
+
+      console.log(`📊 Posting compact comment...`);
+      await postComment(data.owner, data.repo, data.prNumber, compactComment, data.installationId);
 
     } catch (dbError) {
       console.error("❌ CRITICAL DATABASE ERROR:", dbError);

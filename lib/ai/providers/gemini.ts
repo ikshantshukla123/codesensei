@@ -61,7 +61,55 @@ FORMAT (exactly like this):
   }
 }
 
-// Generate student-friendly explanations for the Trinity Knowledge Deck
+// Generate full structured Markdown lesson for the Professor Mode
+export async function generateFullLesson(bug: {
+  type: string;
+  description: string;
+  severity: string;
+  codeSnippet?: string;
+}) {
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+  // 🎓 THE PROFESSOR PROMPT
+  const prompt = `
+Act as a Senior Cybersecurity Instructor writing a lesson for a junior developer.
+
+TOPIC: ${bug.type}
+CONTEXT: The student wrote this code (which has the bug):
+"${bug.codeSnippet || bug.description}"
+
+TASK: Write a structured Markdown lesson.
+
+REQUIRED SECTIONS (Use these exact headers):
+
+## 1. The Concept 🧠
+Explain ${bug.type} simply. Use a real-world analogy (e.g., "It's like leaving your keys in the door").
+
+## 2. The Code Anatomy 🔍
+Look at the student's code snippet above. Explain EXACTLY which line is dangerous and why. Be specific.
+
+## 3. Real-World Disaster 📉
+Find a specific HISTORICAL breach caused by this specific bug (e.g., TalkTalk, Equifax, or a recent 2024/2025 DeFi hack).
+- Name the Company.
+- Amount Lost (approximate).
+- What happened in 1-2 sentences.
+
+## 4. The Fix 🛠️
+Provide the CORRECTED code block (TypeScript/JavaScript). Explain why the fix works.
+
+TONE: Professional, Encouraging, Educational.
+`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    return result.response.text();
+  } catch (err) {
+    console.error("Gemini Lesson Error:", err);
+    return "## ⚠️ Lesson Unavailable\n\nOur AI Professor is currently offline. Please review standard security documentation for this issue.";
+  }
+}
+
+// Legacy function kept for backwards compatibility
 export async function generateTrinityCards(bug: Bug): Promise<{
   definition: string;
   compliance: string;

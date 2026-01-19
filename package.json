@@ -14,6 +14,7 @@
     "@google/generative-ai": "^0.24.1",
     "@octokit/auth-app": "^8.1.2",
     "@prisma/client": "5.22.0",
+    "@types/react-syntax-highlighter": "^15.5.13",
     "framer-motion": "^12.25.0",
     "inngest": "^3.49.3",
     "lucide-react": "^0.562.0",
@@ -22,6 +23,8 @@
     "prisma": "5.22.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-markdown": "^10.1.0",
+    "react-syntax-highlighter": "^16.1.0",
     "svix": "^1.84.1"
   },
   "devDependencies": {

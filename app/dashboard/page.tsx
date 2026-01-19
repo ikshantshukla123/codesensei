@@ -94,8 +94,8 @@ export default async function DashboardPage() {
   const { userId } = await auth()
   if (!userId) redirect('/sign-in')
 
-  // 2. Fetch Data from Prisma
-  const user = await prisma.user.findUnique({
+  // 2. Fetch or create user in Prisma
+  let user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
       repositories: {
@@ -111,8 +111,65 @@ export default async function DashboardPage() {
     }
   })
 
-  // 3. Handle User Not Found (Edge Case)
-  if (!user) redirect('/sign-in')
+  // 3. Handle User Not Found - Create or update user instead of redirecting
+  if (!user) {
+    // Get user info from Clerk
+    const clerkUser = await currentUser()
+    if (!clerkUser) redirect('/sign-in')
+
+    const userEmail = clerkUser.emailAddresses[0]?.emailAddress || ''
+
+    // Check if user exists by email (might have been created by webhook with different ID)
+    const existingUserByEmail = await prisma.user.findUnique({
+      where: { email: userEmail }
+    })
+
+    if (existingUserByEmail) {
+      // Update the user's Clerk ID if it changed
+      user = await prisma.user.update({
+        where: { email: userEmail },
+        data: {
+          id: userId,
+          name: clerkUser.fullName || clerkUser.username || existingUserByEmail.name,
+          githubUsername: clerkUser.username || existingUserByEmail.githubUsername,
+        },
+        include: {
+          repositories: {
+            orderBy: { createdAt: 'desc' },
+            include: {
+              analyses: {
+                take: 1,
+                orderBy: { createdAt: 'desc' }
+              }
+            }
+          },
+          wallet: true
+        }
+      })
+    } else {
+      // Create new user
+      user = await prisma.user.create({
+        data: {
+          id: userId,
+          email: userEmail,
+          name: clerkUser.fullName || clerkUser.username || 'User',
+          githubUsername: clerkUser.username || null,
+        },
+        include: {
+          repositories: {
+            orderBy: { createdAt: 'desc' },
+            include: {
+              analyses: {
+                take: 1,
+                orderBy: { createdAt: 'desc' }
+              }
+            }
+          },
+          wallet: true
+        }
+      })
+    }
+  }
 
   // 4. Logic: Is Installed? (Condition B)
   // We explicitly check if repositories exist as a proxy for installation
@@ -212,8 +269,11 @@ export default async function DashboardPage() {
             if (riskScore > 80) { repoStatusColor = "text-red-500"; repoStatusText = "CRITICAL" }
             else if (riskScore > 40) { repoStatusColor = "text-yellow-500"; repoStatusText = "WARNING" }
 
+            // CRITICAL FIX: Link to analysis ID, not repository ID
+            const reportLink = lastAnalysis ? `/dashboard/scan/${lastAnalysis.id}` : '#'
+
             return (
-              <Link key={repo.id} href={`/dashboard/scan/${repo.id}`} className="group">
+              <Link key={repo.id} href={reportLink} className={`group ${!lastAnalysis ? 'pointer-events-none opacity-50' : ''}`}>
                 <div className="bg-[#111111] border border-[#262626] rounded-xl p-6 hover:border-green-500/50 transition-all duration-300 h-full flex flex-col justify-between">
 
                   <div>
