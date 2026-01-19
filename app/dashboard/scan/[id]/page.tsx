@@ -9,7 +9,7 @@ import { revalidatePath } from "next/cache";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import LessonSidebar from './LessonSidebar';
+import { earnCoins, updateDailyStreak } from "@/lib/wallet/actions";
 
 // --- SERVER ACTIONS ---
 
@@ -63,14 +63,15 @@ async function claimReward(analysisId: string, bugIndex: number, userId: string)
   const rewardMap: Record<string, number> = { "CRITICAL": 50, "HIGH": 30, "MEDIUM": 15, "LOW": 5 };
   const amount = rewardMap[bug.severity] || 5;
 
-  await prisma.wallet.upsert({
-    where: { userId },
-    create: { userId, totalDebtPaid: amount, xp: amount },
-    update: {
-      totalDebtPaid: { increment: amount },
-      xp: { increment: amount }
-    }
+  // Use new transaction system
+  await earnCoins({
+    amount,
+    reason: `Fixed ${bug.severity} bug: ${bug.type}`,
+    source: "BUG_FIX",
   });
+
+  // Update daily streak
+  await updateDailyStreak();
 
   revalidatePath(`/dashboard/scan/${analysisId}`);
 }

@@ -15,6 +15,7 @@ export default async function Navbar() {
   const navItems = userId ? [
     { name: 'Dashboard', href: '/dashboard' },
     { name: 'My Wallet', href: '/wallet' },
+    { name: 'Leaderboard', href: '/dashboard/leaderboard' },
     { name: 'My Learning', href: '/learning' },
     { name: 'Analytics', href: '/analytics' },
   ] : [
