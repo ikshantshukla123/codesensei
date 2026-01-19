@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { ClerkProvider } from '@clerk/nextjs';
-import { headers } from 'next/headers';
 
 const inter = Inter({
   variable: "--font-inter",
@@ -30,27 +27,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Check if we're on the lesson page route
-  const headersList = await headers();
-  const pathname = headersList.get('x-pathname') || '';
-  const isLessonPage = pathname.includes('/dashboard/scan/');
-
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <body
           className={`${inter.variable} ${jetbrainsMono.variable} antialiased font-sans`}
         >
-          {!isLessonPage && <Navbar />}
-          <main className={isLessonPage ? '' : 'pt-20'}>
-            {children}
-          </main>
-          {!isLessonPage && <Footer />}
+          {children}
         </body>
       </html>
     </ClerkProvider>

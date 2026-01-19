@@ -101,10 +101,10 @@ export default async function ScanLessonPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a0a0a] via-[#0f0f0f] to-[#0a0a0a] text-white">
-      
+
       {/* SPLIT VIEW LAYOUT */}
       <div className="flex flex-col lg:flex-row h-screen">
-        
+
         {/* LEFT SIDEBAR - Curriculum Navigator */}
         <aside className="lg:w-96 border-b lg:border-r border-white/10 bg-black/40 backdrop-blur-xl overflow-y-auto">
           <div className="sticky top-0 bg-black/80 backdrop-blur-md border-b border-white/10 z-10">
@@ -132,11 +132,10 @@ export default async function ScanLessonPage({ params }: { params: Promise<{ id:
                 <a
                   key={index}
                   href={`#lesson-${index}`}
-                  className={`block p-4 rounded-lg border transition-all ${
-                    isActive
+                  className={`block p-4 rounded-lg border transition-all ${isActive
                       ? 'bg-white/10 border-green-500/50 shadow-lg shadow-green-500/10'
                       : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-start gap-3">
                     <div className={`p-2 rounded-lg ${isCritical ? 'bg-red-500/10' : 'bg-yellow-500/10'}`}>
@@ -148,9 +147,8 @@ export default async function ScanLessonPage({ params }: { params: Promise<{ id:
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${
-                          isCritical ? 'bg-red-500 text-black' : 'bg-yellow-500 text-black'
-                        }`}>
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase ${isCritical ? 'bg-red-500 text-black' : 'bg-yellow-500 text-black'
+                          }`}>
                           {bug.severity}
                         </span>
                         {bug.lessonContent && !isCompleted && (
@@ -170,13 +168,13 @@ export default async function ScanLessonPage({ params }: { params: Promise<{ id:
         {/* RIGHT PANE - Reading Area */}
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-4xl mx-auto px-8 py-12">
-            
+
             {bugs.map((bug, index) => {
               const isCritical = bug.severity === "CRITICAL" || bug.severity === "HIGH";
-              
+
               return (
                 <section key={index} id={`lesson-${index}`} className="mb-24 scroll-mt-8">
-                  
+
                   {/* Lesson Header */}
                   <div className="mb-12">
                     <div className="flex items-start gap-6 mb-6">
@@ -184,9 +182,8 @@ export default async function ScanLessonPage({ params }: { params: Promise<{ id:
                         <ShieldAlert className={`w-10 h-10 ${isCritical ? 'text-red-400' : 'text-yellow-400'}`} />
                       </div>
                       <div className="flex-1">
-                        <span className={`inline-block text-xs font-bold px-3 py-1 rounded-full mb-3 ${
-                          isCritical ? 'bg-red-500 text-black' : 'bg-yellow-500 text-black'
-                        }`}>
+                        <span className={`inline-block text-xs font-bold px-3 py-1 rounded-full mb-3 ${isCritical ? 'bg-red-500 text-black' : 'bg-yellow-500 text-black'
+                          }`}>
                           MODULE {index + 1} • {bug.severity}
                         </span>
                         <h1 className="text-4xl font-bold text-white font-serif leading-tight mb-3">
@@ -224,22 +221,20 @@ export default async function ScanLessonPage({ params }: { params: Promise<{ id:
                           code({ node, inline, className, children, ...props }: any) {
                             const match = /language-(\w+)/.exec(className || '');
                             const codeString = String(children).replace(/\n$/, '');
-                            
+
                             // Detect if it's "bad" or "fixed" code
                             const isBadCode = codeString.includes('eval(') || codeString.includes('dangerouslySetInnerHTML');
                             const isFixedCode = codeString.includes('textContent') || codeString.includes('sanitize');
-                            
+
                             return !inline && match ? (
-                              <div className={`my-8 rounded-xl overflow-hidden border-2 ${
-                                isBadCode ? 'border-red-500/30 bg-red-950/10' : 
-                                isFixedCode ? 'border-green-500/30 bg-green-950/10' : 
-                                'border-white/10'
-                              }`}>
-                                <div className={`px-5 py-3 flex items-center justify-between ${
-                                  isBadCode ? 'bg-red-500/10' :
-                                  isFixedCode ? 'bg-green-500/10' :
-                                  'bg-white/5'
+                              <div className={`my-8 rounded-xl overflow-hidden border-2 ${isBadCode ? 'border-red-500/30 bg-red-950/10' :
+                                  isFixedCode ? 'border-green-500/30 bg-green-950/10' :
+                                    'border-white/10'
                                 }`}>
+                                <div className={`px-5 py-3 flex items-center justify-between ${isBadCode ? 'bg-red-500/10' :
+                                    isFixedCode ? 'bg-green-500/10' :
+                                      'bg-white/5'
+                                  }`}>
                                   <span className="text-sm font-mono font-semibold text-gray-400">{match[1]}</span>
                                   {isBadCode && <span className="text-xs font-bold text-red-400 uppercase">⚠️ Vulnerable Code</span>}
                                   {isFixedCode && <span className="text-xs font-bold text-green-400 uppercase">✅ Secure Code</span>}
@@ -248,8 +243,8 @@ export default async function ScanLessonPage({ params }: { params: Promise<{ id:
                                   style={oneDark}
                                   language={match[1]}
                                   PreTag="div"
-                                  customStyle={{ 
-                                    margin: 0, 
+                                  customStyle={{
+                                    margin: 0,
                                     background: 'transparent',
                                     fontSize: '0.95rem',
                                     padding: '1.5rem'
@@ -304,7 +299,7 @@ export default async function ScanLessonPage({ params }: { params: Promise<{ id:
                       </div>
                       <h2 className="text-3xl font-bold text-white mb-4 font-serif">Unlock Your Personal Lesson</h2>
                       <p className="text-gray-400 text-lg max-w-xl mx-auto mb-10 leading-relaxed">
-                        Dive deep into <strong className="text-white">{bug.type}</strong> with real-world examples, 
+                        Dive deep into <strong className="text-white">{bug.type}</strong> with real-world examples,
                         historical breaches, and step-by-step fixes crafted by our AI Security Professor.
                       </p>
                       <form action={unlockLesson.bind(null, id, index, bug)}>
@@ -316,7 +311,7 @@ export default async function ScanLessonPage({ params }: { params: Promise<{ id:
                       <p className="text-xs text-gray-600 mt-6 font-mono">Powered by Gemini 2.5 Flash • Personalized to Your Code</p>
                     </div>
                   )}
-                  
+
                 </section>
               );
             })}

@@ -3,9 +3,6 @@ export default function ScanLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="fixed inset-0 overflow-hidden">
-      {children}
-    </div>
-  );
+  // No navbar, no footer - full immersive experience
+  return <>{children}</>;
 }

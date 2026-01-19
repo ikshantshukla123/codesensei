@@ -4,10 +4,10 @@ import React, { Suspense, lazy } from 'react'
 import dynamic from 'next/dynamic'
 
 // Lazy load heavy components for code splitting
-const HeroSection = lazy(() => import('./components/HeroSection'))
-const FeatureGrid = lazy(() => import('./components/FeatureGrid'))
-const StatsSection = lazy(() => import('./components/StatsSection'))
-const CTASection = lazy(() => import('./components/CTASection'))
+const HeroSection = lazy(() => import('../components/HeroSection'))
+const FeatureGrid = lazy(() => import('../components/FeatureGrid'))
+const StatsSection = lazy(() => import('../components/StatsSection'))
+const CTASection = lazy(() => import('../components/CTASection'))
 
 // Section skeleton components
 function SectionSkeleton({ className = "" }: { className?: string }) {

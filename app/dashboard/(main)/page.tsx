@@ -94,11 +94,12 @@ export default async function DashboardPage() {
   const { userId } = await auth()
   if (!userId) redirect('/sign-in')
 
-  // 2. Fetch or create user in Prisma
+  // 2. Fetch or create user in Prisma - OPTIMIZED: Only fetch 5 most recent repos
   let user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
       repositories: {
+        take: 5, // Only fetch 5 most recent for performance
         orderBy: { createdAt: 'desc' },
         include: {
           analyses: {
@@ -109,6 +110,11 @@ export default async function DashboardPage() {
       },
       wallet: true
     }
+  })
+
+  // Get total count for stats
+  const totalReposCount = await prisma.repository.count({
+    where: { userId }
   })
 
   // 3. Handle User Not Found - Create or update user instead of redirecting
@@ -192,15 +198,13 @@ export default async function DashboardPage() {
   // RENDER: CONDITION B (INSTALLED / MAIN DASHBOARD)
   // --------------------------------------------------------------------
 
-  // Calculate specific risk metrics
-  const totalRepos = user.repositories.length
-  const criticalRepos = user.repositories.filter(r => {
-    const score = r.analyses[0]?.riskScore || 0
-    return score > 80
-  }).length
+  // Calculate specific risk metrics using the TOTAL count, not just displayed repos
+  const totalRepos = totalReposCount
+  const totalScans = user.repositories.reduce((acc, r) => acc + r.analyses.length, 0)
+  const hasMoreRepos = totalReposCount > 5
 
-  const userStatus = criticalRepos > 0 ? "WARNING" : "OPTIMAL";
-  const statusColor = criticalRepos > 0 ? "text-red-500" : "text-emerald-500";
+  const userStatus = totalScans > 0 ? "ACTIVE" : "READY";
+  const statusColor = totalScans > 0 ? "text-green-500" : "text-blue-500";
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-green-500/30 pb-20">
@@ -238,12 +242,12 @@ export default async function DashboardPage() {
             <p className="text-3xl font-bold text-white">{totalRepos}</p>
           </PremiumCard>
 
-          <PremiumCard className={criticalRepos > 0 ? "border-red-900/30 bg-red-950/10" : ""}>
+          <PremiumCard>
             <div className="flex items-center gap-3 mb-4 text-[#737373]">
-              <AlertTriangle className={`w-5 h-5 ${criticalRepos > 0 ? "text-red-500" : ""}`} />
-              <span className={`text-sm font-medium uppercase tracking-wider ${criticalRepos > 0 ? "text-red-400" : ""}`}>Critical Risks</span>
+              <Sparkles className="w-5 h-5" />
+              <span className="text-sm font-medium uppercase tracking-wider">Total Scans</span>
             </div>
-            <p className={`text-3xl font-bold ${criticalRepos > 0 ? "text-red-500" : "text-white"}`}>{criticalRepos}</p>
+            <p className="text-3xl font-bold text-white">{totalScans}</p>
           </PremiumCard>
 
           <PremiumCard>
@@ -256,7 +260,12 @@ export default async function DashboardPage() {
         </div>
 
         {/* REPOSITORY GRID */}
-        <h2 className="text-xl font-bold text-white mb-6">Connected Repositories</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-white">Connected Repositories</h2>
+          {hasMoreRepos && (
+            <p className="text-sm text-gray-500">Showing 5 of {totalRepos} repositories</p>
+          )}
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {user.repositories.map((repo) => {
@@ -306,6 +315,18 @@ export default async function DashboardPage() {
             )
           })}
         </div>
+
+        {/* View All Repositories Button */}
+        {hasMoreRepos && (
+          <div className="mt-8 text-center">
+            <Link href="/dashboard/repositories">
+              <Button variant="outline" className="border-white/20 hover:border-green-500/50 text-white">
+                <GitBranch className="w-4 h-4 mr-2" />
+                View All {totalRepos} Repositories
+              </Button>
+            </Link>
+          </div>
+        )}
       </main>
     </div>
   )

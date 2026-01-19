@@ -100,13 +100,47 @@ Provide the CORRECTED code block (TypeScript/JavaScript). Explain why the fix wo
 TONE: Professional, Encouraging, Educational.
 `;
 
-  try {
-    const result = await model.generateContent(prompt);
-    return result.response.text();
-  } catch (err) {
-    console.error("Gemini Lesson Error:", err);
-    return "## ⚠️ Lesson Unavailable\n\nOur AI Professor is currently offline. Please review standard security documentation for this issue.";
+  // Retry logic with exponential backoff
+  const maxRetries = 3;
+  let lastError: any;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const result = await model.generateContent(prompt);
+      return result.response.text();
+    } catch (err: any) {
+      lastError = err;
+      console.error(`Gemini Lesson Error (Attempt ${attempt}/${maxRetries}):`, err);
+
+      // If it's a 503 (overloaded), wait and retry
+      if (err?.status === 503 && attempt < maxRetries) {
+        const waitTime = Math.pow(2, attempt) * 1000; // Exponential backoff: 2s, 4s, 8s
+        console.log(`⏳ Waiting ${waitTime / 1000}s before retry...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        continue;
+      }
+
+      // If it's a different error or final attempt, break
+      break;
+    }
   }
+
+  // All retries failed - return user-friendly error
+  return `## ⚠️ AI Professor Temporarily Unavailable
+
+The AI lesson generator is currently experiencing high demand. This doesn't affect your learning - the security issue has been identified and saved.
+
+**What you can do:**
+1. **Try again in a few minutes** - Click "Generate Lesson" again
+2. **Review the issue details** above to understand the vulnerability
+3. **Research independently** - Search for "${bug.type} security best practices"
+
+**The Issue:** ${bug.description}
+
+**Why it matters:** ${bug.severity} severity vulnerabilities can lead to serious security breaches.
+
+Your learning progress is saved. Come back anytime to generate this lesson!
+`;
 }
 
 // Legacy function kept for backwards compatibility
@@ -119,25 +153,9 @@ export async function generateTrinityCards(bug: Bug): Promise<{
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
     const prompt = `
-You are creating educational cards for a student learning platform called CodeSensei.
-Generate 3 cards (Definition, Compliance/Rules, Real-World Impact) for this coding issue:
-
 Issue Type: ${bug.type}
 Description: ${bug.description}
 Severity: ${bug.severity}
-
-REQUIREMENTS:
-1. DEFINITION Card: Explain what this issue is in simple terms (2-3 sentences)
-2. COMPLIANCE/RULES Card: Explain the security standard or best practice rule (2-3 sentences)
-3. REAL-WORLD IMPACT Card: Give a concrete example of what could happen (include potential $ impact if applicable)
-
-Keep each card under 100 words. Use friendly, educational language.
-Format as JSON:
-{
-  "definition": "...",
-  "compliance": "...",
-  "impact": "..."
-}
 `;
 
     const result = await model.generateContent(prompt);
