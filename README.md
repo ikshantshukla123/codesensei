@@ -482,7 +482,7 @@ ngrok http 3000
 ### 5. 🤖 GitHub PR Analysis
 *Automatic security summaries posted to PRs*
 
-![PR Comment](./public/pr-comment.png)
+![PR Comment](./public/prcomment.png)
 
 ---
 
