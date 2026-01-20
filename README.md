@@ -1188,31 +1188,10 @@ codesensai/
 
 ---
 
-## 🏆 Hackathon Note
-
-**Core Logic Built During Hackathon:**
-- GitHub webhook integration (4 hours)
-- AI orchestration pipeline (6 hours)
-- Professor Mode lesson generator (5 hours)
-- Wallet/coin system (3 hours)
-- Leaderboard (2 hours)
-
-**Total:** ~20 hours of focused development
-
-**Why It Stands Out:**
-1. **Production-Ready Code** (not MVP hacks)
-2. **Full-Stack Integration** (frontend, backend, AI, DB)
-3. **User-Centric Design** (students love gamification)
-4. **Scalable Architecture** (Inngest for background jobs)
-5. **Real AI Innovation** (not just API calls—structured prompts)
-
----
 
 ## 👥 Team & Acknowledgements
 
-### **Core Team**
-- **[Your Name]** - Full-Stack Development, AI Integration
-- **Contributors** - [Add team members if applicable]
+
 
 ### **Technologies & Inspiration**
 - **Vercel** - Next.js 16 App Router docs
@@ -1225,7 +1204,7 @@ codesensai/
 ### **Special Thanks**
 - GitHub Education Team (for API access during hackathon)
 - Gemini API team (for generous free tier)
-- Hackathon organizers
+
 
 ---
 
@@ -1237,10 +1216,10 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 ## 🔗 Links
 
-- **Live Demo:** [codesensai.vercel.app](https://codesensai.vercel.app) *(if deployed)*
+
 - **GitHub:** [github.com/yourusername/codesensai](https://github.com/ikshantshukla123/codesensai)
 
-- **Demo Video:** [YouTube](https://youtube.com) 
+
 
 ---
 
