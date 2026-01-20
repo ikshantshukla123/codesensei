@@ -590,55 +590,7 @@ ngrok http 3000
 
 ---
 
-## 🏆 Hackathon Note
 
-### **Core Logic Built During Hackathon**
-
-| Feature | Development Time |
-|---------|------------------|
-| GitHub Webhook Integration | 4 hours |
-| AI Orchestration Pipeline | 6 hours |
-| Professor Mode (Gemini) | 5 hours |
-| Wallet/Coin System | 3 hours |
-| Leaderboard | 2 hours |
-| **Total** | **~20 hours** |
-
-### **Why This Project Stands Out**
-
-1. **Production-Ready Code** (not MVP hacks)
-   - TypeScript strict mode
-   - Proper error handling with retry logic
-   - Database transactions for atomicity
-
-2. **Full-Stack Integration**
-   - Frontend: Next.js 16 + Server Components
-   - Backend: API Routes + Server Actions
-   - AI: Multi-model orchestration
-   - DB: Prisma + PostgreSQL
-
-3. **User-Centric Design**
-   - Students love gamification (proven 3x engagement)
-   - Real-world breach examples resonate
-   - Scroll spy navigation (UX innovation)
-
-4. **Scalable Architecture**
-   - Inngest for background jobs (handles spikes)
-   - Serverless DB (Neon auto-scales)
-   - Edge functions for global performance
-
-5. **Real AI Innovation**
-   - Not just API wrapper—structured educational prompts
-   - Multi-model council (DeepSeek + Gemini)
-   - Retry logic + fallback messages
-
----
-
-## 👥 Team & Acknowledgements
-
-### **Core Team**
-
-- **[Your Name]** - Full-Stack Development, AI Integration, Architecture
-- **Contributors** - [Add team members if applicable]
 
 ### **Technologies & Inspiration**
 
@@ -666,32 +618,14 @@ MIT License - See [LICENSE](LICENSE) for details.
 ## 🔗 Links
 
 - 🌐 **Live Demo:** [codesensai.vercel.app](https://codesensai.vercel.app)
-- 💻 **GitHub:** [github.com/yourusername/codesensai](https://github.com/yourusername/codesensai)
-- 🏆 **Devpost:** [devpost.com/software/codesensai](https://devpost.com/software/codesensai)
-- 🎥 **Demo Video:** [YouTube](https://youtube.com)
+- 💻 **GitHub:** [github.com/ikshantshukla123/codesensai](https://github.com/ikshantshukla123/codesensai)
+
 
 ---
 
-## 📞 Contact
 
-- **Email:** your.email@example.com
-- **LinkedIn:** [linkedin.com/in/yourprofile](https://linkedin.com/in/yourprofile)
-- **Portfolio:** [yourportfolio.com](https://yourportfolio.com)
-- **Twitter:** [@yourhandle](https://twitter.com/yourhandle)
 
----
 
-<div align="center">
-
-### ⭐ Star this repo if you found it useful!
-
-**Built with ❤️ for students learning security**
-
-*Made during [Hackathon Name] 2026*
-
-[Report Bug](https://github.com/yourusername/codesensai/issues) · [Request Feature](https://github.com/yourusername/codesensai/issues) · [Documentation](https://github.com/yourusername/codesensai/wiki)
-
-</div>
 
 ## 🎯 Why CodeSensei Exists
 
