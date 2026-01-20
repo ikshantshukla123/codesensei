@@ -1217,7 +1217,7 @@ MIT License - See [LICENSE](LICENSE) for details.
 ## 🔗 Links
 
 
-- **GitHub:** [github.com/yourusername/codesensai](https://github.com/ikshantshukla123/codesensai)
+- **GitHub:** [github.com/ikshantshukla123/codesensai](https://github.com/ikshantshukla123/codesensai)
 
 
 
