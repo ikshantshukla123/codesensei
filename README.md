@@ -1090,38 +1090,9 @@ codesensai/
 
 ---
 
-## 🎬 Demo Script (60-Second Pitch)
 
-**For Judges/Recruiters:**
 
-1. **Open GitHub PR** (0:00-0:10)
-   - Show student code with SQL injection vulnerability
-   - Wait 5 seconds → CodeSensei comment appears
-   - "Risk Score: 85/100 | $45,000 estimated exposure"
 
-2. **Click Dashboard Link** (0:10-0:25)
-   - Full lesson interface loads
-   - Scroll through modules:
-     - ✅ The Concept (simple explanation)
-     - ✅ Code Anatomy (line-by-line)
-     - ✅ Real-World Disaster (Equifax breach)
-     - ✅ The Fix (corrected code)
-
-3. **Claim Reward** (0:25-0:35)
-   - Click "Claim 50 Coins"
-   - Wallet balance updates
-   - Daily streak increments (+10 bonus)
-
-4. **Leaderboard** (0:35-0:50)
-   - Show global rankings
-   - Your rank highlighted
-   - Competitive element
-
-5. **Redeem Coins** (0:50-1:00)
-   - Show redeem store
-   - AI Hint Token (50 coins)
-   - Mock Interview (200 coins)
-   - "Students earn while learning, spend on career growth"
 
 **Key Talking Points:**
 - ✅ Real-time AI analysis (no waiting)
@@ -1166,27 +1137,6 @@ codesensai/
 
 ---
 
-## 🗺️ Roadmap
-
-### **Q1 2026**
-- [ ] Complete redeem system integration
-- [ ] Add badges/achievements
-- [ ] Mobile-responsive lesson viewer
-- [ ] Export PDF reports
-
-### **Q2 2026**
-- [ ] Live attack simulation (safe sandbox)
-- [ ] Team learning mode
-- [ ] Instructor dashboard
-- [ ] AI code auto-fixer
-
-### **Q3 2026**
-- [ ] Mobile app (React Native)
-- [ ] API for third-party integrations
-- [ ] Custom curriculum builder
-- [ ] Enterprise SSO
-
----
 
 
 ## 👥 Team & Acknowledgements
