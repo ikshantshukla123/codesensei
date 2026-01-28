@@ -67,14 +67,17 @@ export default function HeroSection() {
           >
             <HeroSignInButton />
 
-            <motion.button
+            <motion.a
+              href="https://youtu.be/KcyJXRaWTvA"
+              target="_blank"
+              rel="noopener noreferrer"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="flex items-center px-8 py-4 border border-foreground/20 text-foreground font-semibold rounded-lg hover:bg-foreground/5 transition-all duration-300 backdrop-blur-sm"
             >
               <PlayIcon className="mr-2 h-5 w-5" />
               Watch Demo
-            </motion.button>
+            </motion.a>
           </motion.div>
 
           {/* Demo Dashboard Preview */}

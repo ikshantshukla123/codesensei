@@ -33,17 +33,17 @@ export default function MobileMenu({ navItems, isAuthenticated }: MobileMenuProp
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="absolute top-full left-0 right-0 md:hidden glass-card border-t border-foreground/10 bg-background/95">
-          <div className="px-2 pt-2 pb-3 space-y-1">
+        <div className="absolute top-full left-0 right-0 md:hidden bg-background border-t border-foreground/20 z-50 shadow-2xl backdrop-blur-xl">
+          <div className="px-4 pt-4 pb-6 space-y-2">
             {navItems.map((item) => {
               const isActive = pathname === item.href || (item.href.startsWith('#') && pathname === '/')
               return (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`block px-3 py-2 rounded-md transition-colors duration-300 ${isActive
-                    ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5'
+                  className={`block px-4 py-3 rounded-lg font-medium transition-all duration-300 ${isActive
+                    ? 'text-white bg-gradient-to-r from-green-500 to-emerald-500 shadow-lg'
+                    : 'text-foreground hover:text-green-500 hover:bg-foreground/5'
                     }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
@@ -51,9 +51,9 @@ export default function MobileMenu({ navItems, isAuthenticated }: MobileMenuProp
                 </Link>
               )
             })}
-            
+
             {/* Authentication section */}
-            <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-700 mt-2 pt-4">
+            <div className="px-2 py-3 border-t border-foreground/10 mt-4 pt-6">
               {isAuthenticated ? (
                 <div className="flex flex-col space-y-3">
                   <div className="flex justify-center">

@@ -81,6 +81,9 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   transition: background-color 0.3s ease, color 0.3s ease;
+  /* Smooth scrolling with hardware acceleration */
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
 /* Custom glassmorphism utilities */
@@ -177,4 +180,33 @@ body {
     top: 100%;
     opacity: 0;
   }
+}
+
+/* Performance optimizations */
+.perspective-1000 {
+  perspective: 1000px;
+  will-change: transform;
+}
+
+/* Optimize heavy animations */
+.hover\:scale-105:hover {
+  transform: scale(1.05);
+  will-change: transform;
+}
+
+/* Smooth scrolling containers */
+.min-h-screen {
+  will-change: auto;
+}
+
+/* Hardware acceleration for cards and animations */
+.transform,
+.animate-spin,
+.animate-float,
+.transition-all,
+.transition-transform {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
