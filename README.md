@@ -486,17 +486,7 @@ ngrok http 3000
 
 ---
 
-## 🎬 Demo Script (60-Second Pitch)
 
-**For Judges/Recruiters:**
-
-| Time | Action | What to Show |
-|------|--------|--------------|
-| 0:00-0:10 | **Open GitHub PR** | Student code with SQL injection → CodeSensei comment appears |
-| 0:10-0:25 | **Click Dashboard Link** | Scroll through AI-generated lesson: Concept → Anatomy → Breach → Fix |
-| 0:25-0:35 | **Claim Reward** | +50 coins earned, daily streak +1, transaction history updates |
-| 0:35-0:50 | **Leaderboard** | Show global rankings, your rank highlighted, competitive element |
-| 0:50-1:00 | **Redeem Coins** | Show redeem store: AI Hint (50), Premium Lesson (120), Mock Interview (200) |
 
 **Key Talking Points:**
 - ✅ **Real-time AI analysis** (no waiting, <100ms webhook response)
