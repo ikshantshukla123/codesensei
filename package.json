@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "postinstall": "prisma generate",
-    "build": "next build",
+    "build": "NEXT_PRIVATE_FORCE_WEBPACK=1 next build",
     "start": "next start",
     "lint": "eslint"
   },
