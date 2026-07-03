@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/*
+ * The app forces a single dark theme via `data-theme="dark"` on <html>.
+ * By default Tailwind v4's `dark:` variant keys off `prefers-color-scheme`,
+ * which desyncs the utility classes from the CSS variables on light-OS
+ * devices. Bind the `dark:` variant to `data-theme="dark"` so both stay
+ * in lockstep regardless of the OS preference.
+ */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
   /* Light mode colors */
   --background: #ffffff;

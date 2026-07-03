@@ -34,7 +34,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
+      <html lang="en" data-theme="dark" suppressHydrationWarning>
         <body
           className={`${inter.variable} ${jetbrainsMono.variable} antialiased font-sans`}
         >
